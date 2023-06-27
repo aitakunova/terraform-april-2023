@@ -7,25 +7,28 @@ packer {
   }
 }
 
-source "amazon-ebs" "ubuntu" {
-  ami_name      = "learn-packer-linux-aws"
+source "amazon-ebs" "example" {
+  ami_name      = "golden-image {{timestamp}}"
   instance_type = "t2.micro"
-  region        = "us-west-2"
-  source_ami_filter {
-    filters = {
-      name                = "ubuntu/images/*ubuntu-xenial-16.04-amd64-server-*"
-      root-device-type    = "ebs"
-      virtualization-type = "hvm"
-    }
-    most_recent = true
-    owners      = ["099720109477"]
+  region        = "us-east-1"
+  source_ami = "ami-022e1a32d3f742bd8"
+  ssh_username = "ec2-user"
+  ssh_keypair_name = "packer"
+  ssh_private_key_file = "~/.ssh/id_rsa"
+
+  run_tags = {
+    Name = "Golden Image"
   }
-  ssh_username = "ubuntu"
 }
 
 build {
-  name    = "learn-packer"
-  sources = [
-    "source.amazon-ebs.ubuntu"
-  ]
+  sources = ["source.amazon-ebs.example"]
+
+  provisioner "shell" {
+    script = "setup.sh"
+  }
+
+  provisioner "breakpoint" {
+    note = "Please verify"
+  }
 }
